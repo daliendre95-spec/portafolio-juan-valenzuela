@@ -384,6 +384,18 @@
     </div>
   </footer>
 
+  <dialog class="gallery-lightbox" id="gallery-lightbox" aria-labelledby="gallery-lightbox-caption">
+    <div class="gallery-lightbox__inner">
+      <button type="button" class="gallery-lightbox__close" aria-label="Cerrar visor">Cerrar</button>
+      <button type="button" class="gallery-lightbox__prev" aria-label="Imagen anterior">Anterior</button>
+      <button type="button" class="gallery-lightbox__next" aria-label="Imagen siguiente">Siguiente</button>
+      <figure class="gallery-lightbox__figure">
+        <img class="gallery-lightbox__img" src="" alt="">
+        <figcaption id="gallery-lightbox-caption" class="gallery-lightbox__caption"></figcaption>
+      </figure>
+    </div>
+  </dialog>
+
   <script>
     (function () {
       var header = document.querySelector('.site-header');
@@ -431,6 +443,88 @@
 
       videos.forEach(function (video) {
         observer.observe(video);
+      });
+    })();
+
+    (function () {
+      var dialog = document.getElementById('gallery-lightbox');
+      if (!dialog || typeof dialog.showModal !== 'function') return;
+
+      var lightboxImg = dialog.querySelector('.gallery-lightbox__img');
+      var lightboxCaption = dialog.querySelector('.gallery-lightbox__caption');
+      var btnClose = dialog.querySelector('.gallery-lightbox__close');
+      var btnPrev = dialog.querySelector('.gallery-lightbox__prev');
+      var btnNext = dialog.querySelector('.gallery-lightbox__next');
+      var galleryImages = [];
+      var currentIndex = 0;
+
+      function updateNavButtons() {
+        var multi = galleryImages.length > 1;
+        btnPrev.hidden = !multi;
+        btnNext.hidden = !multi;
+      }
+
+      function showImage(index) {
+        if (!galleryImages.length) return;
+        currentIndex = (index + galleryImages.length) % galleryImages.length;
+        var img = galleryImages[currentIndex];
+        lightboxImg.src = img.currentSrc || img.src;
+        lightboxImg.alt = img.alt || '';
+        lightboxCaption.textContent = img.alt || '';
+        updateNavButtons();
+      }
+
+      function openLightbox(images, index) {
+        galleryImages = images;
+        showImage(index);
+        dialog.showModal();
+      }
+
+      function closeLightbox() {
+        dialog.close();
+        lightboxImg.removeAttribute('src');
+        galleryImages = [];
+      }
+
+      document.querySelectorAll('.gallery--collection').forEach(function (gallery) {
+        var images = Array.from(gallery.querySelectorAll('img'));
+        images.forEach(function (img, index) {
+          var figure = img.closest('.gallery-item');
+          if (!figure) return;
+          figure.classList.add('gallery-item--interactive');
+          figure.setAttribute('tabindex', '0');
+          figure.setAttribute('role', 'button');
+          figure.setAttribute('aria-label', 'Ampliar: ' + (img.alt || 'imagen de colección'));
+
+          function openFromFigure() {
+            openLightbox(images, index);
+          }
+
+          figure.addEventListener('click', openFromFigure);
+          figure.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              openFromFigure();
+            }
+          });
+        });
+      });
+
+      btnClose.addEventListener('click', closeLightbox);
+      btnPrev.addEventListener('click', function () {
+        showImage(currentIndex - 1);
+      });
+      btnNext.addEventListener('click', function () {
+        showImage(currentIndex + 1);
+      });
+
+      dialog.addEventListener('click', function (event) {
+        if (event.target === dialog) closeLightbox();
+      });
+
+      dialog.addEventListener('keydown', function (event) {
+        if (event.key === 'ArrowLeft') showImage(currentIndex - 1);
+        if (event.key === 'ArrowRight') showImage(currentIndex + 1);
       });
     })();
   </script>
