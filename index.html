@@ -20,9 +20,15 @@
 
   <header class="site-header" id="inicio">
     <div class="header-inner">
-      <p class="masthead-kicker">Fashion · Culture · Brand Communication</p>
-      <h1 class="masthead-title">Juan Pablo Valenzuela</h1>
-      <nav class="site-nav" aria-label="Navegación principal">
+      <div class="header-masthead">
+        <p class="masthead-kicker">Fashion · Culture · Brand Communication</p>
+        <h1 class="masthead-title">Juan Pablo Valenzuela</h1>
+      </div>
+      <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="primary-navigation">
+        <span class="nav-toggle-label">Menú</span>
+        <span class="nav-toggle-icon" aria-hidden="true"></span>
+      </button>
+      <nav class="site-nav" id="primary-navigation" aria-label="Navegación principal">
         <ul>
           <li><a href="#bio">Bio</a></li>
           <li><a href="#trayectoria">Trayectoria</a></li>
@@ -382,6 +388,25 @@
       };
       window.addEventListener('scroll', onScroll, { passive: true });
       onScroll();
+    })();
+
+    (function () {
+      var header = document.querySelector('.site-header');
+      var toggle = document.querySelector('.nav-toggle');
+      var nav = document.getElementById('primary-navigation');
+      if (!header || !toggle || !nav) return;
+
+      toggle.addEventListener('click', function () {
+        var isOpen = header.classList.toggle('is-nav-open');
+        toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+
+      nav.querySelectorAll('a[href^="#"]').forEach(function (link) {
+        link.addEventListener('click', function () {
+          header.classList.remove('is-nav-open');
+          toggle.setAttribute('aria-expanded', 'false');
+        });
+      });
     })();
 
     (function () {
